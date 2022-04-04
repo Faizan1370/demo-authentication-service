@@ -1,0 +1,95 @@
+Mapping related finding----
+@OneTOOne--
+-unidirectional-it means mapping will be from one side.
+lets we have to enity class Student and Address
+ 
+ Class Student                    class Address {   - Will create the two tables student with froeign key address id and address table with its field.
+                                   
+ @OneToOne                          }
+ private Address address
+ 
+ }
+ 
+ Bidirectional Mapping-
+ 
+  Class Student                    class Address {   
+                                     @OneTOOne
+ @OneToOne                            priavte Student student
+                                           }
+ private Address address
+ 
+ }
+ - Will create the two tables student with froeign key address id and address table with foreign key stduent id in this Cas both the table owining side it means we need to set address in the Stduent Entity and set Student Entity  in the Address table if not set then some case will not set the forign key.
+ 
+ -used the cascasde.All to save the data in the both the table.
+ -if we save the student entity using save method without set the student in to the address so will not set the student id in the address table .
+ -id we use the MappedBy key word with like mappedBy="student" then will not create the address id in the student table but create the student id in the address table but need to set the stdudent in the address with using cascade type with all.
+ - Example with User and Address 
+ final Address address = Address.builder().state(userDto.getState()).city(userDto.getCity()).build();
+        final User userobj = User.builder().name(userDto.getName()).password(userDto.getPassword()).email(userDto.getEmail()).contactNumber(userDto.getContactNumber()).address(address).build();
+        address.setUser(userobj);
+        // addressRepo.save(address);
+        userRepo.save(userobj);
+		
+- if we try to fetch the data using student id it will give the value with infinite loop mean it will give the response json  user detail with address detail then address alson  give the user json so this loop will inifinite.
+-To solve this problem use the @JsonBackReference and @JsonMnaagedReference it decide  the parent table and child table or we can say the which table has owning side
+example-
+ @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonManagedReference
+    private User user;
+	
+	
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonBackReference
+    private Address address;
+
+
+@OneToMany Mapping-
+Uni directional Mapping-
+
+class  Stduent{
+@OneToMany
+private List<Address> address;
+}
+
+class Address{
+}
+-will create the three tables Student ,Address and Stduent_Address table like.
+stduent_id     address_id
+
+-To avoid the creation of extra table will use the bidrectionale mapping with mappedBy keyword
+-Bidirectional Mapping-
+class  Stduent{
+@OneToMany(mappedBy ="stduent")
+private List<Address> address;
+}
+
+class Address{
+@ManyToOne
+private Stduent student;
+}
+-in this case in the address table Stduent_id will create as column but need to set the stduent in the each address object so this way is little bit complicated so another way to avoid the extra table use the unidirectional mapping with @joinColumn 
+
+class  Stduent{
+@OneToMany
+@JoinColmun(name="stduent_id")
+private List<Address> address;
+}
+
+class Address{
+}
+- In this case will create the student_id in the address table with its coresponding values.
+-If we fecth the Address value usin the Address Repository it will not show the student_id column.
+-If we want to fecth the student_id along with address info ass one field student_id as same as joinColumn field in Student Entity if we create diffrent from the student_id it will return null.
+-After completed all the codition and save the stduent obeject so it will return stduent info with address info but stduent_id field will be null.
+
+-We can create own custom table and its id example of user and role table
+ @JoinTable(name = "USER_ROLE", joinColumns = @JoinColumn(name = "USER_ID"), inverseJoinColumns = @JoinColumn(name = "ROLE_ID"))
+ 
+ 
+Note:If we are creating user with its multiple roles and we dont mention cascade then it will not sotre the value in the role table only store the value in the user table.
+- If we try to fecth user information along with the roles by using by directional mapping means also get roles values its corresponding user values then it will not give the user json  value in the postman in the response due to jsonManaged and jsonBackReference but the hibernate fetch the roles and coresponding user value also we can check using print statement in the role.getUser().
+
+--What is N+1 problem in the hibernate and how to resolve it??
+-
+ 
